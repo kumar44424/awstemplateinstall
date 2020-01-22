@@ -140,8 +140,7 @@ variable "REDHAT_PRIVATE" {
 variable "FW_STATIC_IP" {
     default = "13.57.175.0"
 }
-variable "FW_IMAGE_ID" {
-    default = "ami-b25e7ed7"
+
 }
 variable "FW_NAME" {
     default = "aws-paloalto-ap-south-1"
@@ -198,7 +197,7 @@ resource "aws_subnet" "cam_aws_subnet_public" {
 resource "aws_subnet" "cam_aws_subnet_private" {
     vpc_id = "${aws_vpc.cam_aws.id}"
     cidr_block = "${var.VPC_SUBNET_PRIVATE}"
-    map_public_ip_on_launch = "false"
+    map_public_ip_on_launch = "true"
     availability_zone = "ap-south-1a"
 
     tags {
@@ -371,4 +370,5 @@ resource "aws_instance" "RHEL" {
       "echo yes | sudo yum install zip ; echo yes | sudo yum install unzip ; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip; sudo unzip ./*.zip; sudo bash tf.sh"
     ]
   }}
+  
   
