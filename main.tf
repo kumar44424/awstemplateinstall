@@ -345,7 +345,7 @@ resource "aws_network_interface" "acme_pafw_instance_private" {
   ami = "ami-0b2a265d1f898c37f"
   instance_type = "m5.xlarge"
   instance_initiated_shutdown_behavior = "stop"
-  key_name = "cam_aws"
+  key_name = "cam_aws-temp"
   ebs_optimized = "true"
   ebs_block_device {
       device_name = "/dev/xvda"
@@ -376,7 +376,40 @@ resource "aws_network_interface" "acme_pafw_instance_private" {
     Environment = "${var.ENVIRONMENT}"
     Project = "${var.PROJECT}"
   }
+   
+     connection {
+    user        = "admin"
+    private_key = "${tls_private_key.ssh.private_key_pem}"
+    host        = "${self.public_ip}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
+    bastion_port        = "${var.bastion_port}"
+    bastion_host_key    = "${var.bastion_host_key}"
+    bastion_password    = "${var.bastion_password}"        
+  }
+ provisioner "remote-exec" {
+    inline = [
+      "configure"
+    ]
+  }
+   provisioner "remote-exec" {
+    inline = [
+      "set mgt-config users admin password"
+    ]
+  }   
+        provisioner "remote-exec" {
+    inline = [
+      "Admin@123"
+    ]
+  } 
+            provisioner "remote-exec" {
+    inline = [
+      "Admin@123"
+    ]
+  } 
 }
+  
 
   resource "aws_eip_association" "acme_pafw_instance_eip_assoc" {
   network_interface_id = "${aws_network_interface.acme_FWPublicNetworkInterface.id}"
