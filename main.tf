@@ -141,7 +141,7 @@ variable "FW_STATIC_IP" {
     default = "13.57.175.0"
 }
 
-}
+
 variable "FW_NAME" {
     default = "aws-paloalto-ap-south-1"
 }
