@@ -186,7 +186,7 @@ resource "aws_subnet" "cam_aws_subnet_public" {
     availability_zone = "ap-south-1a"
 
     tags {
-        Name = "test-subnet-public"
+        Name = "cam_aws-subnet-public"
         Owner = "${var.OWNER}"
         Environment = "${var.ENVIRONMENT}"
         Project = "${var.PROJECT}"
@@ -221,16 +221,7 @@ resource "aws_internet_gateway" "cam_aws_gwy" {
     }
 }  
   
-  resource "aws_internet_gateway" "cam_aws_gwy_private" {
-    vpc_id = "${aws_vpc.cam_aws.id}"
-
-    tags {
-        Name = "cam_aws-gwy_private"
-        Owner = "${var.OWNER}"
-        Environment = "${var.ENVIRONMENT}"
-        Project = "${var.PROJECT}"
-    }
-}  
+  
 
   resource "aws_route_table" "acme_route_public" {
     vpc_id = "${aws_vpc.cam_aws.id}"
@@ -256,7 +247,7 @@ resource "aws_route_table_association" "acme_assc_public" {
     vpc_id = "${aws_vpc.cam_aws.id}"
     route {
       cidr_block = "0.0.0.0/0"
-      gateway_id = "${aws_internet_gateway.cam_aws_gwy_private.id}"
+      network_interface_id = "${aws_network_interface.acme_pafw_instance_private.id}"
     }
     tags {
       Name = "acme-route-private"
