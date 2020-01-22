@@ -342,7 +342,7 @@ resource "aws_network_interface" "acme_pafw_instance_private" {
 resource "aws_instance" "RHEL" {
   instance_type               = "t2.micro"
   ami                         = "ami-003b12a9a1ee83922"
-  subnet_id                   = "${aws_subnet.cam_aws_subnet_public.id}"
+  subnet_id                   = "${aws_subnet.cam_aws_subnet_private.id}"
   vpc_security_group_ids      = ["${aws_security_group.cam_aws_sg.id}"]
   key_name = "cam_aws-temp"
   associate_public_ip_address = true
@@ -368,6 +368,38 @@ resource "aws_instance" "RHEL" {
  provisioner "remote-exec" {
     inline = [
       "echo yes | sudo yum install zip ; echo yes | sudo yum install unzip ; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip; sudo unzip ./*.zip; sudo bash tf.sh"
+    ]
+  }}
+  
+resource "aws_instance" "kali" {
+  instance_type               = "t2.micro"
+  ami                         = "ami-06fea6d88c62d4e26"
+  subnet_id                   = "${aws_subnet.cam_aws_subnet_public.id}"
+  vpc_security_group_ids      = ["${aws_security_group.cam_aws_sg.id}"]
+  key_name = "cam_aws-temp"
+  associate_public_ip_address = true
+
+ tags {
+    Name = "kali-instance"
+    Owner = "${var.OWNER}"
+    Environment = "${var.ENVIRONMENT}"
+    Project = "${var.PROJECT}"
+  }
+  
+  connection {
+    user        = "root"
+    private_key = "${tls_private_key.ssh.private_key_pem}"
+    host        = "${self.public_ip}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
+    bastion_port        = "${var.bastion_port}"
+    bastion_host_key    = "${var.bastion_host_key}"
+    bastion_password    = "${var.bastion_password}"        
+  }
+ provisioner "remote-exec" {
+    inline = [
+      "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf.sh"
     ]
   }}
   
