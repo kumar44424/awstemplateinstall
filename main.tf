@@ -245,6 +245,7 @@ resource "aws_route_table_association" "acme_assc_public" {
     vpc_id = "${aws_vpc.cam_aws.id}"
     route {
       cidr_block = "0.0.0.0/0"
+      gateway_id = "${aws_internet_gateway.cam_aws_gwy.id}"
       network_interface_id = "${aws_network_interface.acme_pafw_instance_private.id}"
     }
     tags {
