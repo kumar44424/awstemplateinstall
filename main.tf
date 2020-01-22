@@ -345,7 +345,7 @@ resource "aws_network_interface" "acme_pafw_instance_private" {
   ami = "ami-0b2a265d1f898c37f"
   instance_type = "m5.xlarge"
   instance_initiated_shutdown_behavior = "stop"
-  key_name = "cam_aws-temp"
+  key_name = "rhel"
   ebs_optimized = "true"
   ebs_block_device {
       device_name = "/dev/xvda"
