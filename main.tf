@@ -340,7 +340,60 @@ resource "aws_network_interface" "acme_pafw_instance_private" {
     Project = "${var.PROJECT}"
   }
 }
-  
+   resource "aws_instance" "pafw_instance" {
+  disable_api_termination = false
+  ami = "ami-0b2a265d1f898c37f"
+  instance_type = "m5.xlarge"
+  instance_initiated_shutdown_behavior = "stop"
+  key_name = "cam_aws"
+  ebs_optimized = "true"
+  ebs_block_device {
+      device_name = "/dev/xvda"
+      volume_type = "gp2"
+      delete_on_termination = true
+      volume_size = 60
+  }
+  monitoring = false
+
+  network_interface {
+    device_index = 0
+    network_interface_id = "${aws_network_interface.acme_FWPublicNetworkInterface.id}"
+  }
+
+  network_interface {
+    network_interface_id = "${aws_network_interface.acme_pafw_instance_public.id}"
+    device_index = 1
+  }
+
+  network_interface {
+    network_interface_id = "${aws_network_interface.acme_pafw_instance_private.id}"
+    device_index = 2
+  }
+
+  tags {
+    Name = "pafw-instance"
+    Owner = "${var.OWNER}"
+    Environment = "${var.ENVIRONMENT}"
+    Project = "${var.PROJECT}"
+  }
+}
+
+  resource "aws_eip_association" "acme_pafw_instance_eip_assoc" {
+  network_interface_id = "${aws_network_interface.acme_FWPublicNetworkInterface.id}"
+  private_ip_address = "${var.FW_MGMT_PUBLIC}"
+# 3.20.137.77	
+# allocation_id = "eipalloc-0f7b2c228a346990f"
+  allocation_id = "eipalloc-0424af246479e410f"
+  allow_reassociation = true
+}
+resource "aws_eip_association" "acme_pafw_instance_eip1_assoc" {
+  network_interface_id = "${aws_network_interface.acme_pafw_instance_public.id}"
+  private_ip_address = "${var.FW_GWY_PUBLIC}"
+# 3.20.93.47	
+# allocation_id = "eipalloc-02ca20d76787e94bb"
+  allocation_id = "eipalloc-04d1950788b9eb2b0"
+  allow_reassociation = true
+}
 resource "aws_instance" "RHEL" {
   instance_type               = "t2.micro"
   ami                         = "ami-003b12a9a1ee83922"
