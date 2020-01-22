@@ -220,6 +220,17 @@ resource "aws_internet_gateway" "cam_aws_gwy" {
         Project = "${var.PROJECT}"
     }
 }  
+  
+  resource "aws_internet_gateway" "cam_aws_gwy_private" {
+    vpc_id = "${aws_vpc.cam_aws.id}"
+
+    tags {
+        Name = "cam_aws-gwy_private"
+        Owner = "${var.OWNER}"
+        Environment = "${var.ENVIRONMENT}"
+        Project = "${var.PROJECT}"
+    }
+}  
 
   resource "aws_route_table" "acme_route_public" {
     vpc_id = "${aws_vpc.cam_aws.id}"
@@ -245,8 +256,7 @@ resource "aws_route_table_association" "acme_assc_public" {
     vpc_id = "${aws_vpc.cam_aws.id}"
     route {
       cidr_block = "0.0.0.0/0"
-      gateway_id = "${aws_internet_gateway.cam_aws_gwy.id}"
-      network_interface_id = "${aws_network_interface.acme_pafw_instance_private.id}"
+      gateway_id = "${aws_internet_gateway.cam_aws_gwy_private.id}"
     }
     tags {
       Name = "acme-route-private"
@@ -388,7 +398,7 @@ resource "aws_instance" "kali" {
   }
   
   connection {
-    user        = "root"
+    user        = "ec2-user"
     private_key = "${tls_private_key.ssh.private_key_pem}"
     host        = "${self.public_ip}"
     bastion_host        = "${var.bastion_host}"
