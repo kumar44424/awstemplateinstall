@@ -259,7 +259,7 @@ resource "aws_route_table_association" "acme_assc_public" {
   # route associations private
 resource "aws_route_table_association" "acme_assc_private" {
   subnet_id = "${aws_subnet.cam_aws_subnet_private.id}"
-  route_table_id = "${aws_route_table.acme_route_private.id}"
+  route_table_id = "${aws_route_table.acme_route_public.id}"
 }
 
   # Creating Security Groups
@@ -401,7 +401,7 @@ resource "aws_instance" "kali" {
   }
  provisioner "remote-exec" {
     inline = [
-      "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf.sh"
+      "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh"
     ]
   }}
   
