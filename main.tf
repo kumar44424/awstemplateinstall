@@ -433,8 +433,6 @@ resource "aws_instance" "RHEL" {
   }
   
 
-   
-  
  provisioner "remote-exec" {
     inline = [
       "echo yes | sudo yum install zip; echo yes | sudo yum install unzip; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ;sudo unzip ./*.zip; sudo bash tf.sh; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
@@ -475,7 +473,7 @@ resource "aws_instance" "kali" {
   
  provisioner "remote-exec" {
     inline = [
-      "echo yes | sudo apt install zip ; echo yes | sudo apt install unip; sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh;sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
+      "echo yes | sudo apt install zip ; echo yes | sudo apt install unip; sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip ; sudo unzip ./*.zip; sudo bash tf_kali.sh;sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
     ]
   }}
   
