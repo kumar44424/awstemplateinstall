@@ -487,7 +487,7 @@ resource "aws_instance" "kali" {
   key_name = "rhel"
   associate_public_ip_address = true
     
-  }
+  
 
  tags {
     Name = "windows-instance"
