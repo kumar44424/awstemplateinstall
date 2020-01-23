@@ -494,5 +494,16 @@ resource "aws_instance" "kali" {
     Project = "${var.PROJECT}"
   }
   }
-  
-  
+  #########################################################
+# Output
+#########################################################
+output "RHEL_address" {
+  value = "${aws_instance.RHEL.public_ip}"
+}
+
+output "kali_address" {
+  value = "${aws_instance.kali.public_ip}"
+}
+  output "windows_address" {
+  value = "${aws_instance.windows.public_ip}"
+}
