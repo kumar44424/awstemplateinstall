@@ -598,8 +598,8 @@ EOF
     host = "${self.public_ip}"
     type = "winrm"
     timeout = "10m"
-    user = var.cam_user
-    password = var.cam_user
+    user = "${var.cam_user}"
+    password = "${var.cam_pwd}"
   }
 
 
