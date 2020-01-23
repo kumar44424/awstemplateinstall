@@ -146,6 +146,14 @@ variable "FW_NAME" {
     default = "aws-paloalto-ap-south-1"
 }
 
+  variable "cam_user" {
+  description = "User to be added into servers"
+  default     = "camuser"
+}
+
+variable "cam_pwd" {
+  description = "Password for cam user (minimal length is 8)"
+}
   
   
 #variable "cam_user" {
