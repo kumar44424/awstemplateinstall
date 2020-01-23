@@ -431,11 +431,55 @@ resource "aws_instance" "RHEL" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"        
   }
- provisioner "remote-exec" {
+  
+   provisioner "file" {
+    content = <<EOF
+#!/bin/bash
+LOGFILE="/var/log/addkey.log"
+user_public_key=$1
+if [ "$user_public_key" != "None" ] ; then
+    echo "---start adding user_public_key----" | tee -a $LOGFILE 2>&1
+    echo "$user_public_key" | tee -a $HOME/.ssh/authorized_keys          >> $LOGFILE 2>&1 || { echo "---Failed to add user_public_key---" | tee -a $LOGFILE; exit 1; }
+    echo "---finish adding user_public_key----" | tee -a $LOGFILE 2>&1
+fi
+EOF
+
+    destination = "/tmp/addkey.sh"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+LOGFILE="/var/log/createCAMUser.log"
+apt-get update                                                                            >> $LOGFILE 2>&1 || { echo "---Failed to update---" | tee -a $LOGFILE; exit 1; }
+apt-get install python-minimal -y                                                         >> $LOGFILE 2>&1 || { echo "---Failed to python-minimal---" | tee -a $LOGFILE; exit 1; }
+echo "---start createCAMUser---" | tee -a $LOGFILE 2>&1
+CAMUSER=$1
+CAMPWD=$2
+PASS=$(perl -e 'print crypt($ARGV[0], "password")' $CAMPWD)
+useradd -m -s /bin/bash -p $PASS $CAMUSER                                                 >> $LOGFILE 2>&1 || { echo "---Failed to create user---" | tee -a $LOGFILE; exit 1; }
+echo "$CAMUSER ALL=(ALL:ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config     >> $LOGFILE 2>&1 || { echo "---Failed to config sshd---" | tee -a $LOGFILE; exit 1; }
+echo "AllowUsers ubuntu $CAMUSER" >> /etc/ssh/sshd_config
+service ssh restart                                                                       >> $LOGFILE 2>&1 || { echo "---Failed to restart ssh---" | tee -a $LOGFILE; exit 1; }
+echo "---finished creating CAMUser $CAMUSER---" | tee -a $LOGFILE 2>&1
+EOF
+
+    destination = "/tmp/createCAMUser.sh"
+  }
+
+  # Execute the script remotely
+  provisioner "remote-exec" {
     inline = [
-      "echo yes | sudo yum install zip ; echo yes | sudo yum install unzip ; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip; sudo unzip ./*.zip; sudo bash tf.sh"
+      "chmod +x /tmp/addkey.sh; sudo bash /tmp/addkey.sh \"${var.public_key}\"",
+      "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
     ]
-  }}
+  }
+
+  }
   
 resource "aws_instance" "kali" {
   instance_type               = "t2.micro"
@@ -463,6 +507,55 @@ resource "aws_instance" "kali" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"        
   }
+  
+  provisioner "file" {
+    content = <<EOF
+#!/bin/bash
+LOGFILE="/var/log/addkey.log"
+user_public_key=$1
+if [ "$user_public_key" != "None" ] ; then
+    echo "---start adding user_public_key----" | tee -a $LOGFILE 2>&1
+    echo "$user_public_key" | tee -a $HOME/.ssh/authorized_keys          >> $LOGFILE 2>&1 || { echo "---Failed to add user_public_key---" | tee -a $LOGFILE; exit 1; }
+    echo "---finish adding user_public_key----" | tee -a $LOGFILE 2>&1
+fi
+EOF
+
+    destination = "/tmp/addkey.sh"
+  }
+
+  provisioner "file" {
+    content = <<EOF
+#!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
+LOGFILE="/var/log/createCAMUser.log"
+apt-get update                                                                            >> $LOGFILE 2>&1 || { echo "---Failed to update---" | tee -a $LOGFILE; exit 1; }
+apt-get install python-minimal -y                                                         >> $LOGFILE 2>&1 || { echo "---Failed to python-minimal---" | tee -a $LOGFILE; exit 1; }
+echo "---start createCAMUser---" | tee -a $LOGFILE 2>&1
+CAMUSER=$1
+CAMPWD=$2
+PASS=$(perl -e 'print crypt($ARGV[0], "password")' $CAMPWD)
+useradd -m -s /bin/bash -p $PASS $CAMUSER                                                 >> $LOGFILE 2>&1 || { echo "---Failed to create user---" | tee -a $LOGFILE; exit 1; }
+echo "$CAMUSER ALL=(ALL:ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config     >> $LOGFILE 2>&1 || { echo "---Failed to config sshd---" | tee -a $LOGFILE; exit 1; }
+echo "AllowUsers ubuntu $CAMUSER" >> /etc/ssh/sshd_config
+service ssh restart                                                                       >> $LOGFILE 2>&1 || { echo "---Failed to restart ssh---" | tee -a $LOGFILE; exit 1; }
+echo "---finished creating CAMUser $CAMUSER---" | tee -a $LOGFILE 2>&1
+EOF
+
+    destination = "/tmp/createCAMUser.sh"
+  }
+
+  # Execute the script remotely
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/addkey.sh; sudo bash /tmp/addkey.sh \"${var.public_key}\"",
+      "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
+    ]
+  }
+
+  
  provisioner "remote-exec" {
     inline = [
       "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh"
@@ -478,8 +571,8 @@ resource "aws_instance" "kali" {
   associate_public_ip_address = true
     user_data     = <<EOF
 <powershell>
-net user ${var.INSTANCE_USERNAME} '${var.INSTANCE_PASSWORD}' /add /y
-net localgroup administrators ${var.INSTANCE_USERNAME} /add
+net user ${var.cam_user} '${var.cam_pwd}' /add /y
+net localgroup administrators ${var.cam_user} /add
 
 winrm quickconfig -q
 winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="300"}'
@@ -505,8 +598,8 @@ EOF
     host = coalesce(self.public_ip, self.private_ip)
     type = "winrm"
     timeout = "10m"
-    user = var.INSTANCE_USERNAME
-    password = var.INSTANCE_PASSWORD
+    user = var.cam_user
+    password = var.cam_user
   }
 
 
@@ -516,22 +609,6 @@ EOF
     Environment = "${var.ENVIRONMENT}"
     Project = "${var.PROJECT}"
   }
-  
-  connection {
-    user        = "ec2-user"
-    private_key = "${tls_private_key.ssh.private_key_pem}"
-    host        = "${self.public_ip}"
-    bastion_host        = "${var.bastion_host}"
-    bastion_user        = "${var.bastion_user}"
-    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
-    bastion_port        = "${var.bastion_port}"
-    bastion_host_key    = "${var.bastion_host_key}"
-    bastion_password    = "${var.bastion_password}"        
   }
- provisioner "remote-exec" {
-    inline = [
-      "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh"
-    ]
-  }}
   
   
