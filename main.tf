@@ -433,36 +433,14 @@ resource "aws_instance" "RHEL" {
   }
   
 
-  provisioner "file" {
-    content = <<EOF
-#!/bin/bash
-set -o errexit
-set -o nounset
-set -o pipefail
-LOGFILE="/var/log/createCAMUser.log"
-apt-get update                                                                            >> $LOGFILE 2>&1 || { echo "---Failed to update---" | tee -a $LOGFILE; exit 1; }
-apt-get install python-minimal -y                                                         >> $LOGFILE 2>&1 || { echo "---Failed to python-minimal---" | tee -a $LOGFILE; exit 1; }
-echo "---start createCAMUser---" | tee -a $LOGFILE 2>&1
-CAMUSER=$1
-CAMPWD=$2
-PASS=$(perl -e 'print crypt($ARGV[0], "password")' $CAMPWD)
-useradd -m -s /bin/bash -p $PASS $CAMUSER                                                 >> $LOGFILE 2>&1 || { echo "---Failed to create user---" | tee -a $LOGFILE; exit 1; }
-echo "$CAMUSER ALL=(ALL:ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config     >> $LOGFILE 2>&1 || { echo "---Failed to config sshd---" | tee -a $LOGFILE; exit 1; }
-echo "AllowUsers ubuntu $CAMUSER" >> /etc/ssh/sshd_config
-service ssh restart                                                                       >> $LOGFILE 2>&1 || { echo "---Failed to restart ssh---" | tee -a $LOGFILE; exit 1; }
-echo "---finished creating CAMUser $CAMUSER---" | tee -a $LOGFILE 2>&1
-EOF
-
-    destination = "/tmp/createCAMUser.sh"
-  }
-
-  # Execute the script remotely
-  provisioner "remote-exec" {
+   
+  
+ provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
+      "sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo unzip ./*.zip; sudo bash tf.sh"
     ]
   }
+
 
   }
   
@@ -492,38 +470,7 @@ resource "aws_instance" "kali" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"        
   }
-
-
-  provisioner "file" {
-    content = <<EOF
-#!/bin/bash
-set -o errexit
-set -o nounset
-set -o pipefail
-LOGFILE="/var/log/createCAMUser.log"
-apt-get update                                                                            >> $LOGFILE 2>&1 || { echo "---Failed to update---" | tee -a $LOGFILE; exit 1; }
-apt-get install python-minimal -y                                                         >> $LOGFILE 2>&1 || { echo "---Failed to python-minimal---" | tee -a $LOGFILE; exit 1; }
-echo "---start createCAMUser---" | tee -a $LOGFILE 2>&1
-CAMUSER=$1
-CAMPWD=$2
-PASS=$(perl -e 'print crypt($ARGV[0], "password")' $CAMPWD)
-useradd -m -s /bin/bash -p $PASS $CAMUSER                                                 >> $LOGFILE 2>&1 || { echo "---Failed to create user---" | tee -a $LOGFILE; exit 1; }
-echo "$CAMUSER ALL=(ALL:ALL) NOPASSWD:ALL" | (EDITOR="tee -a" visudo)
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config     >> $LOGFILE 2>&1 || { echo "---Failed to config sshd---" | tee -a $LOGFILE; exit 1; }
-echo "AllowUsers ubuntu $CAMUSER" >> /etc/ssh/sshd_config
-service ssh restart                                                                       >> $LOGFILE 2>&1 || { echo "---Failed to restart ssh---" | tee -a $LOGFILE; exit 1; }
-echo "---finished creating CAMUser $CAMUSER---" | tee -a $LOGFILE 2>&1
-EOF
-
-    destination = "/tmp/createCAMUser.sh"
-  }
-
-  # Execute the script remotely
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
-    ]
-  }
+  
 
   
  provisioner "remote-exec" {
