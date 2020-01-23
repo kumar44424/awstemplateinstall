@@ -437,7 +437,7 @@ resource "aws_instance" "RHEL" {
   
  provisioner "remote-exec" {
     inline = [
-      "echo yes | sudo yum install zip; echo yes | sudo yum install unzip; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo unzip ./*.zip; sudo bash tf.sh"
+      "echo yes | sudo yum install zip; echo yes | sudo yum install unzip; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ;sudo unzip ./*.zip; sudo bash tf.sh; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
     ]
   }
 
@@ -475,7 +475,7 @@ resource "aws_instance" "kali" {
   
  provisioner "remote-exec" {
     inline = [
-      "echo yes | sudo apt install zip ; echo yes | sudo apt install unip; sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh"
+      "echo yes | sudo apt install zip ; echo yes | sudo apt install unip; sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh;sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
     ]
   }}
   
@@ -484,28 +484,10 @@ resource "aws_instance" "kali" {
   ami                         = "ami-0a8afc66668399657"
   subnet_id                   = "${aws_subnet.cam_aws_subnet_public.id}"
   vpc_security_group_ids      = ["${aws_security_group.cam_aws_sg.id}"]
-  key_name = "cam_aws-temp"
+  key_name = "rhel"
   associate_public_ip_address = true
-    user_data     = <<EOF
-<powershell>
-net user ${var.cam_user} '${var.cam_pwd}' /add /y
-net localgroup administrators ${var.cam_user} /add
-</powershell>
-EOF
-
-
-  provisioner "file" {
-    source = "test.txt"
-    destination = "C:/test.txt"
+    
   }
-  connection {
-    host = "${self.public_ip}"
-    type = "winrm"
-    timeout = "10m"
-    user = "${var.cam_user}"
-    password = "${var.cam_pwd}"
-  }
-
 
  tags {
     Name = "windows-instance"
