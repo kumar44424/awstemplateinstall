@@ -595,7 +595,7 @@ EOF
     destination = "C:/test.txt"
   }
   connection {
-    host = coalesce(self.public_ip, self.private_ip)
+    host = ${self.public_ip}
     type = "winrm"
     timeout = "10m"
     user = var.cam_user
