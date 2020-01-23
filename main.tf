@@ -435,7 +435,7 @@ resource "aws_instance" "RHEL" {
 
  provisioner "remote-exec" {
     inline = [
-      "echo yes | sudo yum install zip; echo yes | sudo yum install unzip; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ;sudo unzip ./*.zip; sudo bash tf.sh; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
+      "echo yes | sudo yum install zip; echo yes | sudo yum install unzip; sudo curl -L -O https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip ; sudo curl -L -O https://ibm.box.com/shared/static/i2hech8d74r6o0fvosip52btxf63dw8q.zip ;sudo unzip i2hech8d74r6o0fvosip52btxf63dw8q.zip;sudo unzip odevtrqvhdmwaz6gypb2jkd856yldt4i.zip; sudo bash tf.sh; sudo chmod +x CarbonBlackClientSetup-linux-v6.2.2.10003.sh; sudo bash CarbonBlackClientSetup-linux-v6.2.2.10003.sh"
     ]
   }
 
