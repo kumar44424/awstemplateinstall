@@ -432,20 +432,6 @@ resource "aws_instance" "RHEL" {
     bastion_password    = "${var.bastion_password}"        
   }
   
-   provisioner "file" {
-    content = <<EOF
-#!/bin/bash
-LOGFILE="/var/log/addkey.log"
-user_public_key=$1
-if [ "$user_public_key" != "None" ] ; then
-    echo "---start adding user_public_key----" | tee -a $LOGFILE 2>&1
-    echo "$user_public_key" | tee -a $HOME/.ssh/authorized_keys          >> $LOGFILE 2>&1 || { echo "---Failed to add user_public_key---" | tee -a $LOGFILE; exit 1; }
-    echo "---finish adding user_public_key----" | tee -a $LOGFILE 2>&1
-fi
-EOF
-
-    destination = "/tmp/addkey.sh"
-  }
 
   provisioner "file" {
     content = <<EOF
@@ -474,7 +460,6 @@ EOF
   # Execute the script remotely
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/addkey.sh; sudo bash /tmp/addkey.sh \"${var.public_key}\"",
       "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
     ]
   }
@@ -507,21 +492,7 @@ resource "aws_instance" "kali" {
     bastion_host_key    = "${var.bastion_host_key}"
     bastion_password    = "${var.bastion_password}"        
   }
-  
-  provisioner "file" {
-    content = <<EOF
-#!/bin/bash
-LOGFILE="/var/log/addkey.log"
-user_public_key=$1
-if [ "$user_public_key" != "None" ] ; then
-    echo "---start adding user_public_key----" | tee -a $LOGFILE 2>&1
-    echo "$user_public_key" | tee -a $HOME/.ssh/authorized_keys          >> $LOGFILE 2>&1 || { echo "---Failed to add user_public_key---" | tee -a $LOGFILE; exit 1; }
-    echo "---finish adding user_public_key----" | tee -a $LOGFILE 2>&1
-fi
-EOF
 
-    destination = "/tmp/addkey.sh"
-  }
 
   provisioner "file" {
     content = <<EOF
@@ -550,7 +521,6 @@ EOF
   # Execute the script remotely
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/addkey.sh; sudo bash /tmp/addkey.sh \"${var.public_key}\"",
       "chmod +x /tmp/createCAMUser.sh; sudo bash /tmp/createCAMUser.sh \"${var.cam_user}\" \"${var.cam_pwd}\"",
     ]
   }
