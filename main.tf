@@ -461,4 +461,69 @@ resource "aws_instance" "kali" {
     ]
   }}
   
+  resource "aws_instance" "windows" {
+  instance_type               = "t2.micro"
+  ami                         = "ami-0a8afc66668399657"
+  subnet_id                   = "${aws_subnet.cam_aws_subnet_public.id}"
+  vpc_security_group_ids      = ["${aws_security_group.cam_aws_sg.id}"]
+  key_name = "cam_aws-temp"
+  associate_public_ip_address = true
+    user_data     = <<EOF
+<powershell>
+net user ${var.INSTANCE_USERNAME} '${var.INSTANCE_PASSWORD}' /add /y
+net localgroup administrators ${var.INSTANCE_USERNAME} /add
+
+winrm quickconfig -q
+winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="300"}'
+winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+winrm set winrm/config/service/auth '@{Basic="true"}'
+
+netsh advfirewall firewall add rule name="WinRM 5985" protocol=TCP dir=in localport=5985 action=allow
+netsh advfirewall firewall add rule name="WinRM 5986" protocol=TCP dir=in localport=5986 action=allow
+
+net stop winrm
+sc.exe config winrm start=auto
+net start winrm
+</powershell>
+EOF
+
+
+  provisioner "file" {
+    source = "test.txt"
+    destination = "C:/test.txt"
+  }
+  connection {
+    host = coalesce(self.public_ip, self.private_ip)
+    type = "winrm"
+    timeout = "10m"
+    user = var.INSTANCE_USERNAME
+    password = var.INSTANCE_PASSWORD
+  }
+
+
+ tags {
+    Name = "windows-instance"
+    Owner = "${var.OWNER}"
+    Environment = "${var.ENVIRONMENT}"
+    Project = "${var.PROJECT}"
+  }
+  
+  connection {
+    user        = "ec2-user"
+    private_key = "${tls_private_key.ssh.private_key_pem}"
+    host        = "${self.public_ip}"
+    bastion_host        = "${var.bastion_host}"
+    bastion_user        = "${var.bastion_user}"
+    bastion_private_key = "${ length(var.bastion_private_key) > 0 ? base64decode(var.bastion_private_key) : var.bastion_private_key}"
+    bastion_port        = "${var.bastion_port}"
+    bastion_host_key    = "${var.bastion_host_key}"
+    bastion_password    = "${var.bastion_password}"        
+  }
+ provisioner "remote-exec" {
+    inline = [
+      "sudo curl -L -O https://ibm.box.com/shared/static/6oc31mh87tywrwwi5yc9fodor891q5py.zip; sudo unzip ./*.zip; sudo bash tf_kali.sh"
+    ]
+  }}
+  
   
