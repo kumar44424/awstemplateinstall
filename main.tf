@@ -435,7 +435,7 @@ resource "aws_instance" "RHEL" {
 
  provisioner "remote-exec" {
     inline = [
-      "echo yes | yum install unzip; wget -O /tmp/tf.sh.zip https://ibm.box.com/shared/static/odevtrqvhdmwaz6gypb2jkd856yldt4i.zip; unzip /tmp/tf.sh.zip; chmod +x /tmp/tf.sh; bash tf.sh;"
+      "echo yes | yum install unzip;  sudo curl -L -O https://ibm.box.com/shared/static/feqe5yocqf9yamtp7qn3ps5zfxjt30u4.zip; unzip feqe5yocqf9yamtp7qn3ps5zfxjt30u4.zip ; chmod +x tf1.sh; bash tf1.sh;"
     ]
   }
 
